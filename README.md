@@ -22,10 +22,10 @@ Kausalya Hariharan
 ## 📸 Screenshots
 
 ### Home UI
-![Home](home.png)
+![Home](./screenshot/home.png)
 
 ### Add Doubt
-![Add](add.png)
+![Add](./screenshot/add.png)
 
 ### Accept Flow
-![Accept](hold.png)
+![Accept](./screenshot/hold.png)
