@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
 
@@ -6,13 +7,23 @@ const app = express();
 /* -------------------------
    MIDDLEWARE (MUST BE TOP)
 --------------------------*/
+mongoose.connect("mongodb://127.0.0.1:27017/doubtsphere")
+  .then(() => console.log("MongoDB connected ✅"))
+  .catch(err => console.log(err));
 app.use(cors());
 app.use(express.json());
 
 /* -------------------------
    IN-MEMORY STORAGE
 --------------------------*/
-let doubts = [];
+const doubtSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  status: { type: String, default: "OPEN" },
+  acceptedBy: { type: String, default: null }
+});
+
+const Doubt = mongoose.model("Doubt", doubtSchema);
 
 /* -------------------------
    TEST ROUTE
@@ -24,73 +35,63 @@ app.get("/", (req, res) => {
 /* -------------------------
    CREATE DOUBT
 --------------------------*/
-app.post("/doubt", (req, res) => {
+app.post("/doubt", async (req, res) => {
   const { title, description } = req.body;
 
-  if (!title || !description) {
-    return res.status(400).json({ error: "Title and description required" });
-  }
-
-  const newDoubt = {
-    id: doubts.length + 1,
+  const newDoubt = await Doubt.create({
     title,
-    description,
-    status: "OPEN",
-    acceptedBy: null
-  };
+    description
+  });
 
-  doubts.push(newDoubt);
   res.json(newDoubt);
 });
 
 /* -------------------------
    GET ALL DOUBTS
 --------------------------*/
-app.get("/doubts", (req, res) => {
-  res.json(doubts);
+app.get("/doubts", async (req, res) => {
+  try {
+    const doubts = await Doubt.find();
+    res.json(doubts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /* -------------------------
    UPDATE DOUBT
 --------------------------*/
-app.put("/doubt/:id", (req, res) => {
-  const id = parseInt(req.params.id);
+app.put("/doubt/:id", async (req, res) => {
+  const updated = await Doubt.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
 
-  const doubt = doubts.find(d => d.id === id);
-
-  if (!doubt) {
-    return res.status(404).json({ error: "Doubt not found" });
-  }
-
-  const { status } = req.body || {};
-
-  if (!status) {
-    return res.status(400).json({ error: "Status is required" });
-  }
-
-  doubt.status = status;
-
-  res.json(doubt);
+  res.json(updated);
 });
 
 /* -------------------------
    ACCEPT DOUBT (CORE FEATURE)
 --------------------------*/
-app.post("/accept-doubt", (req, res) => {
+app.post("/accept-doubt", async (req, res) => {
   const { doubtId, userId } = req.body;
 
-  const doubt = doubts.find(d => d.id === doubtId);
+  const doubt = await Doubt.findById(doubtId);
 
   if (!doubt) {
     return res.status(404).json({ error: "Doubt not found" });
   }
 
+  // 🔒 already taken check
   if (doubt.status !== "OPEN") {
     return res.status(400).json({ error: "Doubt already accepted" });
   }
 
   doubt.status = "MATCHED";
   doubt.acceptedBy = userId;
+
+  await doubt.save();
 
   res.json({
     message: "Doubt accepted successfully",
@@ -101,21 +102,9 @@ app.post("/accept-doubt", (req, res) => {
 /* -------------------------
    DELETE DOUBT
 --------------------------*/
-app.delete("/doubt/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-
-  const index = doubts.findIndex(d => d.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ error: "Doubt not found" });
-  }
-
-  const deleted = doubts.splice(index, 1);
-
-  res.json({
-    message: "Deleted successfully",
-    deleted: deleted[0]
-  });
+app.delete("/doubt/:id", async (req, res) => {
+  const deleted = await Doubt.findByIdAndDelete(req.params.id);
+  res.json(deleted);
 });
 
 /* -------------------------
