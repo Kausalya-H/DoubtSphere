@@ -17,4 +17,15 @@ Kausalya Hariharan
 - Built full-stack doubt resolution platform  
 - Implemented first-accept system  
 - Integrated MongoDB with backend APIs  
-- Designed responsive UI using React  
+- Designed responsive UI using React
+
+## 📸 Screenshots
+
+### Home UI
+![Home](home.png)
+
+### Add Doubt
+![Add](add.png)
+
+### Accept Flow
+![Accept](hold.png)
