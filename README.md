@@ -29,3 +29,7 @@ Kausalya Hariharan
 
 ### Accept Flow
 ![Accept](./screenshots/hold.png)
+
+## 🎥 Demo Video
+
+[Watch Demo](https://github.com/Kausalya-H/DoubtSphere/blob/main/screenshots/demo.mov)
