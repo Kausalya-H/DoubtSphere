@@ -32,4 +32,4 @@ Kausalya Hariharan
 
 ## 🎥 Demo Video
 
-[Watch Demo](https://github.com/Kausalya-H/DoubtSphere/blob/main/screenshots/demo.mov)
+[▶ Watch Demo](https://your-google-drive-link)
