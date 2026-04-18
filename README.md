@@ -1,2 +1,3 @@
-# DoubtSphere
-Built a full-stack real-time doubt resolution platform with first-accept locking system using React, Node.js, and MongoDB.
+# DoubtSphere 🚀
+
+A full-stack real-time doubt resolution platform with a first-accept locking system.
