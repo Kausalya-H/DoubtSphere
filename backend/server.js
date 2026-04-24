@@ -77,26 +77,28 @@ app.put("/doubt/:id", async (req, res) => {
 app.post("/accept-doubt", async (req, res) => {
   const { doubtId, userId } = req.body;
 
-  const doubt = await Doubt.findById(doubtId);
+  try {
+    const updated = await Doubt.findOneAndUpdate(
+      {
+        _id: doubtId,
+        status: "OPEN"   // 🔥 KEY CONDITION
+      },
+      {
+        status: "MATCHED",
+        acceptedBy: userId
+      },
+      { new: true }
+    );
 
-  if (!doubt) {
-    return res.status(404).json({ error: "Doubt not found" });
+    if (!updated) {
+      return res.status(400).json({ error: "Already accepted" });
+    }
+
+    res.json(updated);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  // 🔒 already taken check
-  if (doubt.status !== "OPEN") {
-    return res.status(400).json({ error: "Doubt already accepted" });
-  }
-
-  doubt.status = "MATCHED";
-  doubt.acceptedBy = userId;
-
-  await doubt.save();
-
-  res.json({
-    message: "Doubt accepted successfully",
-    doubt
-  });
 });
 
 /* -------------------------
@@ -110,6 +112,6 @@ app.delete("/doubt/:id", async (req, res) => {
 /* -------------------------
    START SERVER
 --------------------------*/
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
 });

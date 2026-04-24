@@ -5,8 +5,9 @@ function App() {
   const [doubts, setDoubts] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
 
-  // 👉 Fetch doubts
   const fetchDoubts = () => {
     axios.get("http://localhost:3000/doubts")
       .then(res => setDoubts(res.data))
@@ -17,9 +18,11 @@ function App() {
     fetchDoubts();
   }, []);
 
-  // 👉 Add doubt
   const addDoubt = () => {
-    if (!title || !description) return;
+    if (!title || !description) {
+      alert("Fill all fields");
+      return;
+    }
 
     axios.post("http://localhost:3000/doubt", {
       title,
@@ -31,163 +34,84 @@ function App() {
     });
   };
 
-  // 👉 Accept doubt
   const acceptDoubt = (id) => {
+    if (!name || !role) {
+      alert("Enter name and select role");
+      return;
+    }
+
+    const userIdentity = `${name} (${role})`;
+
     axios.post("http://localhost:3000/accept-doubt", {
       doubtId: id,
-      userId: "kausalya"
+      userId: userIdentity
     }).then(() => {
       fetchDoubts();
+    }).catch(() => {
+      alert("Already accepted!");
     });
   };
 
   return (
-    <div style={{
-  padding: 30,
-  fontFamily: "Inter, sans-serif",
-  maxWidth: 850,
-  margin: "0 auto",
-  minHeight: "100vh",
-  backgroundColor: "#f4f6f8",
-  color: "#111"
-}}>
+    <div style={{ padding: 30, maxWidth: 850, margin: "auto" }}>
 
-      {/* HEADER */}
-      <h1 style={{
-  textAlign: "center",
-  marginBottom: 25,
-  fontSize: 30
-}}>
-  DoubtSphere 🚀
-</h1>
+      <h1 style={{ textAlign: "center" }}>DoubtSphere 🚀</h1>
 
-      {/* CREATE BOX */}
-      {/* CREATE BOX */}
-{/* CREATE BOX */}
-<div style={{
-  background: "white",
-  padding: 15,
-  borderRadius: 12,
-  display: "flex",
-  gap: 10,
-  marginBottom: 20,
-  boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
-}}>
+      {/* NAME */}
+      <input
+        placeholder="Enter your name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+
+      {/* ROLE */}
+      <select value={role} onChange={(e) => setRole(e.target.value)}>
+        <option value="">Select Role</option>
+        <option value="Guide">Guide</option>
+        <option value="User">User</option>
+      </select>
+
+      {/* CREATE */}
+      <div>
         <input
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          style={{
-            flex: 1,
-            padding: 10,
-            borderRadius: 8,
-            border: "1px solid #ddd"
-          }}
         />
 
         <input
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={{
-            flex: 2,
-            padding: 10,
-            borderRadius: 8,
-            border: "1px solid #ddd"
-          }}
         />
 
-        <button
-          onClick={addDoubt}
-          style={{
-  padding: "10px 15px",
-  borderRadius: 8,
-  backgroundColor: "#111827",
-  color: "white",
-  border: "none",
-  cursor: "pointer",
-  transition: "0.2s"
-}}
-        >
-          Add
-        </button>
+        <button onClick={addDoubt}>Add</button>
       </div>
 
       {/* LIST */}
       {doubts.length === 0 ? (
-        <p style={{ textAlign: "center" }}>No doubts yet</p>
+        <p>No doubts yet</p>
       ) : (
         doubts.map((d) => (
-          <div
-            key={d._id}
-            style={{
-  background: "white",
-  padding: 18,
-  marginBottom: 15,
-  borderRadius: 12,
-  boxShadow: "0 4px 12px rgba(0,0,0,0.06)"
-}}
-          >
+          <div key={d._id} style={{ border: "1px solid gray", margin: 10, padding: 10 }}>
+
+            <p>👤 {d.acceptedBy ? d.acceptedBy : "Not accepted yet"}</p>
             <h3>{d.title}</h3>
             <p>{d.description}</p>
 
-            {/* STATUS BADGE */}
-            <p>
-              Status:{" "}
-              <span style={{
-  padding: "4px 10px",
-  borderRadius: 999,
-  fontSize: 12,
-  color: "white",
-  backgroundColor: d.status === "OPEN" ? "#3b82f6" : "#10b981"
-}}>
-                {d.status}
-              </span>
-            </p>
+            <p>Status: {d.status}</p>
 
-            {/* ACCEPTED BY */}
-            {d.acceptedBy && (
-              <p style={{ color: "#10b981", fontWeight: "bold" }}>
-                Accepted by: {d.acceptedBy}
-              </p>
-            )}
+            <button
+              onClick={() => acceptDoubt(d._id)}
+              disabled={d.status !== "OPEN"}
+            >
+              {d.status === "OPEN" ? "Accept" : "Already Accepted"}
+            </button>
 
-            {/* BUTTON */}
-            {d.status === "OPEN" ? (
-              <button
-  onClick={() => acceptDoubt(d._id)}
-  disabled={d.status !== "OPEN"}
-  style={{
-    marginTop: 10,
-    padding: "8px 12px",
-    borderRadius: 8,
-    border: "none",
-    backgroundColor: "#111827",
-    color: "white",
-    cursor: d.status === "OPEN" ? "pointer" : "not-allowed",
-    opacity: d.status === "OPEN" ? 1 : 0.5
-  }}
->
-  Accept
-</button>
-            ) : (
-              <button
-                disabled
-                style={{
-                  marginTop: 10,
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "none",
-                  backgroundColor: "#d1d5db",
-                  color: "#666"
-                }}
-              >
-                Already Accepted
-              </button>
-            )}
           </div>
         ))
       )}
+
     </div>
   );
 }
